@@ -1,0 +1,60 @@
+import java.util.HashMap;
+import java.util.Map;
+
+public class ShamirSecretSharing {
+    public static int findConstantTerm(Map<String, Map<String, String>> rootPoints) {
+        Map<Integer, Integer> points = new HashMap<>();
+        for (Map.Entry<String, Map<String, String>> entry : rootPoints.entrySet()) {
+            int x = Integer.parseInt(entry.getKey());
+            int base = Integer.parseInt(entry.getValue().get("base"));
+            String value = entry.getValue().get("value");
+            int y = decodeYValue(value, base);
+            points.put(x, y);
+        }
+
+        int[] polynomial = lagrangeInterpolation(points);
+        return polynomial[polynomial.length - 1];
+    }
+
+    private static int decodeYValue(String yValue, int base) {
+        return Integer.parseInt(yValue, base);
+    }
+
+    private static int[] lagrangeInterpolation(Map<Integer, Integer> points) {
+        int n = points.size();
+        int[] polynomial = new int[n];
+
+        int[] xValues = new int[n];
+        int[] yValues = new int[n];
+
+        int i = 0;
+        for (Map.Entry<Integer, Integer> entry : points.entrySet()) {
+            xValues[i] = entry.getKey();
+            yValues[i] = entry.getValue();
+            i++;
+        }
+
+        for (int k = 0; k < n; k++) {
+            int numerator = 1;
+            int denominator = 1;
+            for (int j = 0; j < n; j++) {
+                if (k != j) {
+                    numerator *= (xValues[k] - xValues[j]);
+                    denominator *= (xValues[k] - xValues[j]);
+                }
+            }
+            polynomial[k] = yValues[k] * numerator / denominator;
+        }
+
+        return polynomial;
+    }
+
+    public static void main(String[] args) {
+        Map<String, Map<String, String>> rootPoints = new HashMap<>();
+        rootPoints.put("2", Map.of("base", "2", "value", "111"));
+        // Add more root points as needed
+
+        int constantTerm = findConstantTerm(rootPoints);
+        System.out.println("The constant term 'c' of the polynomial is: " + constantTerm);
+    }
+}
